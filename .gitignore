@@ -1,0 +1,11 @@
+#Latex Aux Files
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.fls
+*.log
+*.out
+*.synctex.gz
+*.pytxcode
+*.fdb_latexmk

@@ -1,0 +1,85 @@
+\documentclass{article}
+\usepackage[margin=1.2in]{geometry}
+\usepackage{datetime}
+\usepackage{hyperref}      %for \url macro
+\usepackage{microtype}     %attempt to fix issue with justification protrusion (in references)
+\usepackage{amssymb}       % for formatting less/greater than symbols
+\usepackage{amsmath}
+\usepackage{enumitem}      %for changing spacing in bulleted lists
+\usepackage{subfigure}        %for subfigures
+
+
+\renewcommand{\arraystretch}{1.25}
+
+\usepackage[gobble=auto, runall=true]{pythontex}
+\usepackage{float} %for forcing position of images
+
+\usepackage{graphicx}
+\graphicspath{ {../images/} }
+\usepackage[export]{adjustbox}
+\usepackage[justification=centering]{caption}
+
+\usepackage{listings}   %for typesetting code
+\usepackage{color}
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{codepurple},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\footnotesize,
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    %numbers=left,
+    numbersep=5pt,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=2
+}
+\lstset{style=mystyle}
+
+\frenchspacing                   %removes extra spacing after a period at the end of a sentence.
+\newdateformat{daymonthyear}{\THEDAY\ \monthname\ \THEYEAR}
+
+\title{CSC411 Machine Learning \\ Project 4: Reinforcement Learning}
+\author{ Ariel Kelman \\ Student No: 1000561368
+         \\ \\
+         Gideon Blinick \\ Student No: 999763000 }
+\daymonthyear
+
+
+
+\begin{document}
+   \maketitle{}
+
+
+   \section{Introduction}
+
+
+
+   \subsection{Results \& Report Reproducibility}
+   All results and plots can be generated using the code in \texttt{tictactoe.py}.
+   All code is python 3, run with Anaconda 3.6.3.
+   Running the code will save all generated images in the \texttt{resources} folder,
+   where they are used by \LaTeX. Note that some of the sections require the code for
+   other sections (in the same file) to be run first.
+   To reproduce the report, simply run it through \LaTeX. This will pull the most recently
+   generated figures from the \texttt{resources} folder.
+
+   \section{Policy}
+   \section{Policy Gradient}
+   \section{Rewards}
+   \section{Training}
+   \section{Win Rate}
+   \section{First Moves}
+   \section{Limitations}
+
+
+\end{document}
