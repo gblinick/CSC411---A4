@@ -10,6 +10,9 @@ import torch.nn.functional as F
 import torch.optim as optim
 import torch.distributions
 from torch.autograd import Variable
+import os
+
+os.chdir('/Users/arielkelman/Documents/Ariel/EngSci3-PhysicsOption/Winter2018/CSC411 - Machine Learning/Project4/CSC411-A4/')
 
 class Environment(object):
     """
@@ -103,11 +106,17 @@ class Policy(nn.Module):
     The Tic-Tac-Toe Policy
     """
     def __init__(self, input_size=27, hidden_size=64, output_size=9):
-        super(Policy, self).__init__()
-        # TODO
+        #super(Policy, self).__init__() #Python 2
+        super().__init__() #Python 3
+        # TODO - done?
+        self.Linear1 = nn.Linear(input_size, hidden_size)
+        self.Linear2 = nn.Linear(hidden_size, output_size)
 
     def forward(self, x):
-        # TODO
+        # TODO - done?
+        h = F.relu( self.Linear1(x) )
+        out = F.softmax( self.Linear2(h) )
+        return out
 
 def select_action(policy, state):
     """Samples an action from the policy at the state."""
@@ -135,7 +144,12 @@ def compute_returns(rewards, gamma=1.0):
     >>> compute_returns([0,-0.5,5,0.5,-10], 0.9)
     [-2.5965000000000003, -2.8850000000000002, -2.6500000000000004, -8.5, -10.0]
     """
-    # TODO
+    # TODO - Done
+    k = len(rewards)
+    rewards = np.array(rewards)
+    gammas = np.array( [gamma**(i) for i in range(k) ] )
+    G = [ sum( rewards[i:]*gammas[:k-i] ) for i in range(k) ]
+    return G
 
 def finish_episode(saved_rewards, saved_logprobs, gamma=1.0):
     """Samples an action from the policy at the state."""
@@ -155,11 +169,11 @@ def finish_episode(saved_rewards, saved_logprobs, gamma=1.0):
 def get_reward(status):
     """Returns a numeric given an environment status."""
     return {
-            Environment.STATUS_VALID_MOVE  : 0, # TODO
-            Environment.STATUS_INVALID_MOVE: 0,
-            Environment.STATUS_WIN         : 0,
-            Environment.STATUS_TIE         : 0,
-            Environment.STATUS_LOSE        : 0
+            Environment.STATUS_VALID_MOVE  : 1, # TODO
+            Environment.STATUS_INVALID_MOVE: -10,
+            Environment.STATUS_WIN         : 15,
+            Environment.STATUS_TIE         : 3,
+            Environment.STATUS_LOSE        : -1
     }[status]
 
 def train(policy, env, gamma=1.0, log_interval=1000):
@@ -218,10 +232,15 @@ def load_weights(policy, episode):
 
 
 if __name__ == '__main__':
+    
+    
+    
     import sys
     policy = Policy()
     env = Environment()
+    train(policy, env, gamma=1.0, log_interval=1000)
 
+    '''
     if len(sys.argv) == 1:
         # `python tictactoe.py` to train the agent
         train(policy, env)
@@ -231,3 +250,5 @@ if __name__ == '__main__':
         ep = int(sys.argv[1])
         load_weights(policy, ep)
         print(first_move_distr(policy, env))
+    '''
+
