@@ -181,9 +181,15 @@ def train(policy, env, gamma=1.0, log_interval=1000):
     optimizer = optim.Adam(policy.parameters(), lr=0.001)
     scheduler = torch.optim.lr_scheduler.StepLR(
             optimizer, step_size=10000, gamma=0.9)
+    
+    #running counts - track metrics during training
     running_reward = 0
+    moves, inv_moves = 0, 0 #number of moves and invalid moves
+    m = {}
+    m['running_reward'] = []
+    m['frac_inv_moves'] = []
 
-    for i_episode in count(1):
+    for i_episode in range(15000): #count(1):
         saved_rewards = []
         saved_logprobs = []
         state = env.reset()
@@ -194,19 +200,25 @@ def train(policy, env, gamma=1.0, log_interval=1000):
             reward = get_reward(status)
             saved_logprobs.append(logprob)
             saved_rewards.append(reward)
-
+            if status == Environment.STATUS_INVALID_MOVE:
+                inv_moves += 1
+            moves += 1
+        
         R = compute_returns(saved_rewards)[0]
         running_reward += R
-
+        
         finish_episode(saved_rewards, saved_logprobs, gamma)
-
+        
         if i_episode % log_interval == 0:
-            print('Episode {}\tAverage return: {:.2f}'.format(
-                i_episode,
-                running_reward / log_interval))
+            avg_return = running_reward / log_interval
+            print('Episode {}\t Average return: {:.2f}\t %Inv Moves: {:.3f}'.format(i_episode, avg_return, inv_moves/moves) )
+            m['running_reward'] += [running_reward]
+            m['frac_inv_moves'] += [inv_moves/moves]
             running_reward = 0
+            moves, inv_moves = 0, 0
 
-        if i_episode % (log_interval) == 0:
+        save = False #save file
+        if i_episode % (log_interval) == 0 and save:
             torch.save(policy.state_dict(),
                        "ttt/policy-%d.pkl" % i_episode)
 
@@ -230,6 +242,31 @@ def load_weights(policy, episode):
     weights = torch.load("ttt/policy-%d.pkl" % episode)
     policy.load_state_dict(weights)
 
+def play_games(policy, env, num):
+    results = []
+    player2 = env.play_against_random
+    
+    for i in range(num):
+        state = env.reset()
+        done = False
+        while not done:
+            action, logprob = select_action(policy, state)
+            state, status, done = player2(action)
+            #reward = get_reward(status)
+        
+        if status == 'win':
+            results += [1]
+        elif status == 'lose':
+            results += [2]
+        elif status == 'tie':
+            results += [0]
+        else:
+            print('Invalid end of game')
+            return
+    return results
+
+
+
 
 if __name__ == '__main__':
     
@@ -238,7 +275,18 @@ if __name__ == '__main__':
     import sys
     policy = Policy()
     env = Environment()
+    
+    res = play_games(policy, env, 100)
+    a = [x for x in res if x == 1 ]
+    print( len(a)/len(res) )
+    
+    st = first_move_distr(policy, env)
     train(policy, env, gamma=1.0, log_interval=1000)
+    en = first_move_distr(policy, env)
+    
+    res = play_games(policy, env, 100)
+    a = [x for x in res if x == 1 ]
+    print( len(a)/len(res) )
 
     '''
     if len(sys.argv) == 1:
