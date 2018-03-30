@@ -2,6 +2,7 @@ from __future__ import print_function
 from collections import defaultdict
 from itertools import count
 import numpy as np
+from numpy import random as rd
 import math
 import random
 import torch
@@ -12,6 +13,9 @@ import torch.distributions
 from torch.autograd import Variable
 import os
 
+rd.seed(0)
+random.seed(0)
+torch.manual_seed(0)
 os.chdir('/Users/arielkelman/Documents/Ariel/EngSci3-PhysicsOption/Winter2018/CSC411 - Machine Learning/Project4/CSC411-A4/')
 
 class Environment(object):
