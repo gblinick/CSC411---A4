@@ -13,10 +13,14 @@ import torch.distributions
 from torch.autograd import Variable
 import os
 
-rd.seed(0)
-random.seed(0)
-torch.manual_seed(0)
+
 os.chdir('/Users/arielkelman/Documents/Ariel/EngSci3-PhysicsOption/Winter2018/CSC411 - Machine Learning/Project4/CSC411-A4/')
+
+def rand_seeding(k):
+    rd.seed(k)
+    random.seed(k)
+    torch.manual_seed(k)
+rand_seeding(0)
 
 class Environment(object):
     """
@@ -274,6 +278,16 @@ def play_games(policy, env, num):
 
 if __name__ == '__main__':
     
+    
+    if True: #Part 1
+        rand_seeding(0)
+        env = Environment()
+        env.play_against_random(4)
+        env.render()
+        env.play_against_random(0)
+        env.render()
+        env.play_against_random(8)
+        env.render()
     
     
     import sys
