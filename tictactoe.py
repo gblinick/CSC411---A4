@@ -278,15 +278,20 @@ def play_games(policy, env, num):
 
 if __name__ == '__main__':
     
-    
-    if True: #Part 1
+    #Part 1
+    if True: 
         rand_seeding(0)
+        env.render()
         env = Environment()
-        env.play_against_random(4)
+        env.step(4)
         env.render()
-        env.play_against_random(0)
+        env.step(0)
         env.render()
-        env.play_against_random(8)
+        env.step(2)
+        env.render()
+        env.step(3)
+        env.render()
+        env.step(6)
         env.render()
     
     

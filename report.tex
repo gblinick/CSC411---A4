@@ -61,9 +61,6 @@
 
 
    \section{Introduction}
-
-
-
    \subsection{Results \& Report Reproducibility}
    All results and plots can be generated using the code in \texttt{tictactoe.py}.
    All code is python 3, run with Anaconda 3.6.3.
@@ -73,8 +70,92 @@
    To reproduce the report, simply run it through \LaTeX. This will pull the most recently
    generated figures from the \texttt{resources} folder.
 
+   \subsection{Tic Tac Toe Environment}
+   The \texttt{Environment} class provides the functionality required to play a game of tic tac
+   toe, including against an opponent who plays a random legal move. The game is represented by the
+   \texttt{grid} attribute, which is a \texttt{numpy} array representing the $9$ positions. Each position
+   can have a $0, 1$ or $2$, representing an empty position, or one filled by player 1 ($X$) or 2 ($O$)
+   respectively. The \texttt{turn} attribute can have a value of $1$ or $2$, and represents which player
+   has the next move. The \texttt{done} attribute is a boolean that indicates whether a game has been
+   completed (either with a win, or when the board is full).
+
+   The \texttt{step()} and \texttt{render()} methods allow a tic tac toe game to be played and displayed
+   with text output. Using these methods, a game was played, resulting in the following output:
+   \begin{lstlisting}[language=Python]
+
+      ...
+      .x.
+      ...
+      ====
+      o..
+      .x.
+      ...
+      ====
+      o.x
+      .x.
+      ...
+      ====
+      o.x
+      ox.
+      ...
+      ====
+      o.x
+      ox.
+      x..
+      ====
+   \end{lstlisting}
+
+
    \section{Policy}
+   The \texttt{Policy} class implements a neural network that learns to play tic tac toe. The provided
+   starter code was modified to be a one-hidden layer neural network; the final code is shown in the
+   code block below.
+   \begin{lstlisting}[language=Python, label={PolicyClass}]
+
+      class Policy(nn.Module):
+         """
+         The Tic-Tac-Toe Policy
+         """
+         def __init__(self, input_size=27, hidden_size=64, output_size=9):
+              super().__init__()
+              self.Linear1 = nn.Linear(input_size, hidden_size)
+              self.Linear2 = nn.Linear(hidden_size, output_size)
+
+         def forward(self, x):
+              h = F.relu( self.Linear1(x) )
+              out = F.softmax( self.Linear2(h) )
+              return out
+   \end{lstlisting}
+
+   In choosing an action, the state is represented as a 27-dimensional vector, using a one-hot encoding
+   type scheme. The first nine elements are $1$ if the corresponding location (moving horizontally, and then
+   from top to bottom), and $0$ otherwise. Similarly, the next $9$ elements are $1$ if an $X$ (representing
+   player 1) is in the corresponding location; while the last nine elements provide the same functionality
+   for $O$ (player 2).
+
+   The policy outputs a nine-dimensional vector, which is a probability distribution that is sampled to choose
+   the move for the policy. Thus the policy is stochastic - the \texttt{select\_action()} function samples this
+   distribution to choose a move.
+
+
    \section{Policy Gradient}
+   The \texttt{compute\_returns()} function computes the returns based on the reward at the end of a game.
+   The following code block shows how the returns are calculated.
+   \begin{lstlisting}[language=Python, label={PolicyClass}]
+
+      def compute_returns(rewards, gamma=1.0):
+         """
+         Compute returns for each time step, given the rewards
+         """
+         k = len(rewards)
+         rewards = np.array(rewards)
+         gammas = np.array( [gamma**(i) for i in range(k) ] )
+         G = [ sum( rewards[i:]*gammas[:k-i] ) for i in range(k) ]
+         return G
+   \end{lstlisting}
+
+   The weights are updated on the conclusion of a game...WHY
+
    \section{Rewards}
    \section{Training}
    \section{Win Rate}
