@@ -154,7 +154,15 @@
          return G
    \end{lstlisting}
 
-   The weights are updated on the conclusion of a game...WHY
+   The weights are updated on the conclusion of a game, though this means that the policy does not improve
+   during a game (this is a minor cost considering how short the games are). For updates to the policy to have
+   any meaning in the middle of the game, there would need to be rewards for intermediate states. This would
+   require having a metric that evaluates a tic tac toe position. While this could be done in tic tac toe,
+   it would be quite difficult in more complicated games, where it is not obvious how a position should be
+   rewarded. Having rewards only at the end still improves the policy choices earlier in the game (if an early
+   position leads to a win, that position will be wieghted more positively when propogating backwards).
+   Thus updating the weights at the end of an episode provides a simple way to provide feedback and improve the
+   policy.
 
    \section{Rewards}
    \section{Training}
