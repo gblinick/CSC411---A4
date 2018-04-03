@@ -3,6 +3,7 @@ from collections import defaultdict
 from itertools import count
 import numpy as np
 from numpy import random as rd
+import matplotlib.pyplot as plt
 import math
 import random
 import torch
@@ -193,11 +194,14 @@ def train(policy, env, gamma=1.0, log_interval=1000):
     #running counts - track metrics during training
     running_reward = 0
     moves, inv_moves = 0, 0 #number of moves and invalid moves
+    games, wins = 0, 0 #number of games and wins 
     m = {}
     m['running_reward'] = []
     m['frac_inv_moves'] = []
+    m['i_episode'] = []
+    m['win_rate'] = []
 
-    for i_episode in range(15000): #count(1):
+    for i_episode in range(50000): #count(1):
         saved_rewards = []
         saved_logprobs = []
         state = env.reset()
@@ -210,7 +214,10 @@ def train(policy, env, gamma=1.0, log_interval=1000):
             saved_rewards.append(reward)
             if status == Environment.STATUS_INVALID_MOVE:
                 inv_moves += 1
+            if status == Environment.STATUS_WIN:
+                wins += 1
             moves += 1
+            games += 1
         
         R = compute_returns(saved_rewards)[0]
         running_reward += R
@@ -222,8 +229,11 @@ def train(policy, env, gamma=1.0, log_interval=1000):
             print('Episode {}\t Average return: {:.2f}\t %Inv Moves: {:.3f}'.format(i_episode, avg_return, inv_moves/moves) )
             m['running_reward'] += [running_reward]
             m['frac_inv_moves'] += [inv_moves/moves]
+            m['win_rate'] += [wins/games]
+            m['i_episode'] += [i_episode]
             running_reward = 0
             moves, inv_moves = 0, 0
+            games, wins = 0, 0
 
         save = False #save file
         if i_episode % (log_interval) == 0 and save:
@@ -234,7 +244,7 @@ def train(policy, env, gamma=1.0, log_interval=1000):
             optimizer.step()
             scheduler.step()
             optimizer.zero_grad()
-
+    return m
 
 def first_move_distr(policy, env):
     """Display the distribution of first moves."""
@@ -279,7 +289,7 @@ def play_games(policy, env, num):
 if __name__ == '__main__':
     
     #Part 1
-    if True: 
+    if False: 
         rand_seeding(0)
         env.render()
         env = Environment()
@@ -295,21 +305,38 @@ if __name__ == '__main__':
         env.render()
     
     
-    import sys
+    #import sys
+    rand_seeding(0)
     policy = Policy()
     env = Environment()
     
+    res = play_games(policy, env, 100) 
+    a = [x for x in res if x == 1 ]
+    print( len(a)/len(res) ) #win_rate
+    
+    st = first_move_distr(policy, env) #starting (random) first move dist
+    m = train(policy, env, gamma=0.99, log_interval=1000)
+    en = first_move_distr(policy, env) #first move dist after training
+    
     res = play_games(policy, env, 100)
     a = [x for x in res if x == 1 ]
     print( len(a)/len(res) )
-    
-    st = first_move_distr(policy, env)
-    train(policy, env, gamma=1.0, log_interval=1000)
-    en = first_move_distr(policy, env)
-    
-    res = play_games(policy, env, 100)
-    a = [x for x in res if x == 1 ]
-    print( len(a)/len(res) )
+
+    running_rew = m['running_reward'] 
+    frac_inv_move = m['frac_inv_moves']
+    win_rate = m['win_rate']
+    episode = m['i_episode']
+
+    plt.scatter(episode, frac_inv_move, label='Invalid Moves')
+    plt.scatter(episode, win_rate, label='Win Rate')
+    plt.title('Learning Curve')
+    plt.xlabel('iterations')
+    plt.ylabel('accuracy')
+    plt.legend()
+    #plt.savefig(filename)
+    plt.show()
+    plt.close()
+
 
     '''
     if len(sys.argv) == 1:
