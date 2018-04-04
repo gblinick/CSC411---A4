@@ -13,7 +13,7 @@ import torch.optim as optim
 import torch.distributions
 from torch.autograd import Variable
 import os
-
+#import sys
 
 os.chdir('/Users/arielkelman/Documents/Ariel/EngSci3-PhysicsOption/Winter2018/CSC411 - Machine Learning/Project4/CSC411-A4/')
 
@@ -178,12 +178,11 @@ def finish_episode(saved_rewards, saved_logprobs, gamma=1.0):
 def get_reward(status):
     """Returns a numeric given an environment status."""
     return {
-            Environment.STATUS_VALID_MOVE  : 0, # TODO
+            Environment.STATUS_VALID_MOVE  : 0, # TODO - done
             Environment.STATUS_INVALID_MOVE: -1, 
             Environment.STATUS_WIN         : 1, 
             Environment.STATUS_TIE         : 0,
             Environment.STATUS_LOSE        : 0
-            #1, -10, 15, 3, -1
     }[status]
 
 def train(policy, env, gamma=1.0, log_interval=1000):
@@ -197,7 +196,7 @@ def train(policy, env, gamma=1.0, log_interval=1000):
     moves, inv_moves = 0, 0 #number of moves and invalid moves
     games, wins = 0, 0 #number of games and wins 
     m = {}
-    m['running_reward'] = []
+    m['avg_return'] = []
     m['frac_inv_moves'] = []
     m['i_episode'] = []
     m['win_rate'] = []
@@ -225,10 +224,10 @@ def train(policy, env, gamma=1.0, log_interval=1000):
         
         finish_episode(saved_rewards, saved_logprobs, gamma)
         
-        if i_episode % log_interval == 0:
+        if i_episode % log_interval == 0 and i_episode != 0:
             avg_return = running_reward / log_interval
             print('Episode {}\t Average return: {:.2f}\t %Inv Moves: {:.3f}'.format(i_episode, avg_return, inv_moves/moves) )
-            m['running_reward'] += [running_reward]
+            m['avg_return'] += [avg_return]
             m['frac_inv_moves'] += [inv_moves/moves]
             m['win_rate'] += [wins/games]
             m['i_episode'] += [i_episode]
@@ -236,10 +235,10 @@ def train(policy, env, gamma=1.0, log_interval=1000):
             moves, inv_moves = 0, 0
             games, wins = 0, 0
 
-        save = False #save file
+        save = True #save file
         if i_episode % (log_interval) == 0 and save:
             torch.save(policy.state_dict(),
-                       "ttt/policy-%d.pkl" % i_episode)
+                       "resources/weight_checkpoints/policy-%d.pkl" % i_episode)
 
         if i_episode % 1 == 0: # batch_size
             optimizer.step()
@@ -257,8 +256,8 @@ def first_move_distr(policy, env):
 
 
 def load_weights(policy, episode):
-    """Load saved weights"""
-    weights = torch.load("ttt/policy-%d.pkl" % episode)
+    """Load saved weights""" 
+    weights = torch.load("resources/weight_checkpoints/policy-%d.pkl" % episode)
     policy.load_state_dict(weights)
 
 def play_games(policy, env, num):
@@ -289,7 +288,7 @@ def play_games(policy, env, num):
 
 if __name__ == '__main__':
     
-    #Part 1
+    ## Part 1
     if False: 
         rand_seeding(0)
         env.render()
@@ -304,16 +303,16 @@ if __name__ == '__main__':
         env.render()
         env.step(6)
         env.render()
+
     
-    
-    #import sys
+    ## Part 5
     rand_seeding(0)
     policy = Policy()
     env = Environment()
     
     res = play_games(policy, env, 100) 
     a = [x for x in res if x == 1 ]
-    print( len(a)/len(res) ) #win_rate
+    print( len(a)/len(res) ) #win_rate before training
     
     st = first_move_distr(policy, env) #starting (random) first move dist
     m = train(policy, env, gamma=0.99, log_interval=1000)
@@ -321,25 +320,68 @@ if __name__ == '__main__':
     
     res = play_games(policy, env, 100)
     a = [x for x in res if x == 1 ]
-    print( len(a)/len(res) )
+    print( len(a)/len(res) ) #win_rate after training
 
-    running_rew = m['running_reward'] 
     frac_inv_move = m['frac_inv_moves']
+    avg_return = m['avg_return']
     win_rate = m['win_rate']
     episode = m['i_episode']
 
-    plt.scatter(episode, frac_inv_move, label='Invalid Moves')
-    plt.scatter(episode, win_rate, label='Win Rate')
+    filename = 'part5a'
+    plt.scatter(episode, avg_return, label='Average Returns')
     plt.title('Learning Curve')
-    plt.xlabel('iterations')
-    plt.ylabel('accuracy')
-    plt.legend()
-    #plt.savefig(filename)
-    plt.show()
+    plt.xlabel('episodes')
+    plt.ylabel('average returns')
+    plt.savefig('resources/'+filename)
+    #plt.show()
+    plt.close()
+    
+    filename = 'part5c'
+    plt.scatter(episode, frac_inv_move, label='Invalid Moves')
+    plt.title('Invalid Moves')
+    plt.xlabel('episodes')
+    plt.ylabel('fraction of invalid moves')
+    plt.savefig('resources/'+filename)
+    #plt.show()
     plt.close()
 
 
+    ## Part 6
+    episodes = [0] + episode
+    w = [] 
+    l = []
+    t = []
+    n = 1000 #number of games to test on
+    for i_episode in episodes:
+        p = Policy()
+        e = Environment()
+        load_weights(p, i_episode)
+        res = play_games(p, e, n)
+        
+        a = [x for x in res if x == 1 ]
+        w += [ len(a)/n ]
+        b = [x for x in res if x == 2 ]
+        l += [ len(b)/n ]
+        c = [x for x in res if x == 0 ]
+        t += [ len(c)/n ]
+    
+    filename = 'part6'
+    plt.scatter(episodes, w, label='Win Rate')
+    plt.scatter(episodes, l, label='Lose Rate')
+    plt.scatter(episodes, t, label='Tie Rate')
+    plt.title('Win-Lose-Tie Rates')
+    plt.xlabel('episodes')
+    plt.ylabel('rates')
+    plt.legend()
+    plt.savefig('resources/'+filename)
+    #plt.show()
+    plt.close()
+
+
+
+    ## MISC
     '''
+    import sys
     if len(sys.argv) == 1:
         # `python tictactoe.py` to train the agent
         train(policy, env)

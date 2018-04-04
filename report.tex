@@ -141,7 +141,7 @@
    \section{Policy Gradient}
    The \texttt{compute\_returns()} function computes the returns based on the reward at the end of a game.
    The following code block shows how the returns are calculated.
-   \begin{lstlisting}[language=Python, label={PolicyClass}]
+   \begin{lstlisting}[language=Python, label={returns}]
 
       def compute_returns(rewards, gamma=1.0):
          """
@@ -165,8 +165,86 @@
    policy.
 
    \section{Rewards}
+   When originally setting the rewards (in the \texttt{get\_reward()} function), they were set as shown in
+   table \ref{part4}.
+      \begin{table}[h]
+         \centering
+         \renewcommand{\arraystretch}{1.5}
+
+         \begin{tabular}{ p{7em}|l }
+            \hline
+            status     &     reward      \\
+            \hline \hline
+            VALID\_MOVE        &  1             \\
+            INVALID\_MOVE      &  -10             \\
+            WIN               &  15             \\
+            TIE               &  3             \\
+            LOSE              &  -1             \\
+            \hline
+         \end{tabular}
+
+         \caption{ Original rewards (the \texttt{DONE} status was not give a reward). }
+         \label{part4}
+      \end{table}
+   The logic behind these rewards was to follow an intuitive feeling for how much the above results
+   are actually desired. This is somewhat arbitrary, but does represent a reasonable starting point.
+   Thus a valid move should get a small positive reward, while an invalid one should
+   be heavily penalized. A win is highly rewarded, a tie gets some reward for preventing a loss, while a
+   loss is penalized (it would have been reasonable to start with a more negative penalty here too).
+   The \texttt{DONE} status was not given a reward; that scenario is taken care of by the \texttt{TIE} status.
+
+   However, while debugging during training, the rewards were set to much simpler values, and - since
+   after the issues were resolved the win rate was quite high - the changed rewards were kept. These rewards
+   were simply $+1$ for a win, and $-1$ for an invalid move.
+   A side-effect of this scheme is that the average return is equivalent to the win rate.
+
+   The final \texttt{get\_reward()} function is shown in the following code block.
+   \begin{lstlisting}[language=Python, label={reward}]
+
+      def get_reward(status):
+         """Returns a numeric given an environment status."""
+         return {
+                  Environment.STATUS_VALID_MOVE  : 0,
+                  Environment.STATUS_INVALID_MOVE: -1,
+                  Environment.STATUS_WIN         : 1,
+                  Environment.STATUS_TIE         : 0,
+                  Environment.STATUS_LOSE        : 0
+         }[status]
+   \end{lstlisting}
+
+
    \section{Training}
-   \section{Win Rate}
+   \subsection{Learning Curve}
+   Figure \ref{fig:5a} shows
+      \begin{figure}[h] \centering
+          \includegraphics[width=4in]{resources/part5a}
+          \caption{Learning curve. }
+          \label{fig:5a}
+       \end{figure}
+
+   \subsection{Hidden Units}
+
+   \subsection{Invalid Moves}
+   Figure \ref{fig:5c} shows
+      \begin{figure}[h] \centering
+          \includegraphics[width=4in]{resources/part5c}
+          \caption{ Invalid moves. }
+          \label{fig:5c}
+       \end{figure}
+
+   \subsection{Win-Lose-Tie Ratios}
+   Playing 100 games against a randomized opponent...
+
+
+   \section{Win Rate over Episodes}
+   Figure \ref{fig:6} shows
+      \begin{figure}[h] \centering
+          \includegraphics[width=4in]{resources/part6}
+          \caption{ Win-Lose-Tie Ratios }
+          \label{fig:6}
+       \end{figure}
+
+
    \section{First Moves}
    \section{Limitations}
 
