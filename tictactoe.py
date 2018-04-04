@@ -124,7 +124,7 @@ class Policy(nn.Module):
     def forward(self, x):
         # TODO - done?
         h = F.relu( self.Linear1(x) )
-        out = F.softmax( self.Linear2(h) )
+        out = F.softmax( self.Linear2(h), 1 ) 
         return out
 
 def select_action(policy, state):
@@ -185,7 +185,7 @@ def get_reward(status):
             Environment.STATUS_LOSE        : 0
     }[status]
 
-def train(policy, env, gamma=1.0, log_interval=1000):
+def train(policy, env, gamma=1.0, log_interval=1000, save = True):
     """Train policy gradient."""
     optimizer = optim.Adam(policy.parameters(), lr=0.001)
     scheduler = torch.optim.lr_scheduler.StepLR(
@@ -201,7 +201,7 @@ def train(policy, env, gamma=1.0, log_interval=1000):
     m['i_episode'] = []
     m['win_rate'] = []
 
-    for i_episode in range(50000): #count(1):
+    for i_episode in range(50000): 
         saved_rewards = []
         saved_logprobs = []
         state = env.reset()
@@ -235,7 +235,7 @@ def train(policy, env, gamma=1.0, log_interval=1000):
             moves, inv_moves = 0, 0
             games, wins = 0, 0
 
-        save = True #save file
+        #save policy weights
         if i_episode % (log_interval) == 0 and save:
             torch.save(policy.state_dict(),
                        "resources/weight_checkpoints/policy-%d.pkl" % i_episode)
@@ -315,7 +315,7 @@ if __name__ == '__main__':
     print( len(a)/len(res) ) #win_rate before training
     
     st = first_move_distr(policy, env) #starting (random) first move dist
-    m = train(policy, env, gamma=0.99, log_interval=1000)
+    m = train(policy, env, gamma=0.99, log_interval=1000) #with 64 hidden units
     en = first_move_distr(policy, env) #first move dist after training
     
     res = play_games(policy, env, 100)
@@ -327,13 +327,21 @@ if __name__ == '__main__':
     win_rate = m['win_rate']
     episode = m['i_episode']
 
-    filename = 'part5a'
+    filename = 'part5a_allPoints'
     plt.scatter(episode, avg_return, label='Average Returns')
     plt.title('Learning Curve')
     plt.xlabel('episodes')
     plt.ylabel('average returns')
     plt.savefig('resources/'+filename)
-    #plt.show()
+    plt.close()
+    
+    filename = 'part5a_scaled'
+    plt.scatter(episode, avg_return, label='Average Returns')
+    plt.title('Learning Curve')
+    plt.xlabel('episodes')
+    plt.ylabel('average returns')
+    plt.ylim(0, 1)
+    plt.savefig('resources/'+filename)
     plt.close()
     
     filename = 'part5c'
@@ -342,8 +350,21 @@ if __name__ == '__main__':
     plt.xlabel('episodes')
     plt.ylabel('fraction of invalid moves')
     plt.savefig('resources/'+filename)
-    #plt.show()
     plt.close()
+
+    ## Part 5b - experimenting with number of hidden neurons
+    neurons = [2, 9, 27, 100]
+    win_rate = []
+    n = 1000 #number of games to test on
+    for h in neurons:
+        rand_seeding(0) #don't want seeding to effect results, so reseed each time
+        e = Environment()
+        p = Policy(hidden_size=h)
+        m = train(p, e, gamma=0.99, log_interval=1000, save=False)
+        res = play_games(p, e, n)
+        a = [x for x in res if x == 1 ]
+        win_rate += [ len(a)/n ]
+        print(win_rate)
 
 
     ## Part 6

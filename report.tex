@@ -166,25 +166,25 @@
 
    \section{Rewards}
    When originally setting the rewards (in the \texttt{get\_reward()} function), they were set as shown in
-   table \ref{part4}.
+   table \ref{table:part4}.
       \begin{table}[h]
          \centering
          \renewcommand{\arraystretch}{1.5}
 
-         \begin{tabular}{ p{7em}|l }
+         \begin{tabular}{ p{8em}|l }
             \hline
             status     &     reward      \\
             \hline \hline
-            VALID\_MOVE        &  1             \\
-            INVALID\_MOVE      &  -10             \\
-            WIN               &  15             \\
-            TIE               &  3             \\
-            LOSE              &  -1             \\
+            VALID\_MOVE       &  1       \\
+            INVALID\_MOVE     &  -10     \\
+            WIN               &  15      \\
+            TIE               &  3       \\
+            LOSE              &  -1      \\
             \hline
          \end{tabular}
 
          \caption{ Original rewards (the \texttt{DONE} status was not give a reward). }
-         \label{part4}
+         \label{table:part4}
       \end{table}
    The logic behind these rewards was to follow an intuitive feeling for how much the above results
    are actually desired. This is somewhat arbitrary, but does represent a reasonable starting point.
@@ -199,36 +199,73 @@
    A side-effect of this scheme is that the average return is equivalent to the win rate.
 
    The final \texttt{get\_reward()} function is shown in the following code block.
-   \begin{lstlisting}[language=Python, label={reward}]
+      \begin{lstlisting}[language=Python, label={reward}]
 
-      def get_reward(status):
-         """Returns a numeric given an environment status."""
-         return {
-                  Environment.STATUS_VALID_MOVE  : 0,
-                  Environment.STATUS_INVALID_MOVE: -1,
-                  Environment.STATUS_WIN         : 1,
-                  Environment.STATUS_TIE         : 0,
-                  Environment.STATUS_LOSE        : 0
-         }[status]
-   \end{lstlisting}
+         def get_reward(status):
+            """Returns a numeric given an environment status."""
+            return {
+                     Environment.STATUS_VALID_MOVE  : 0,
+                     Environment.STATUS_INVALID_MOVE: -1,
+                     Environment.STATUS_WIN         : 1,
+                     Environment.STATUS_TIE         : 0,
+                     Environment.STATUS_LOSE        : 0
+            }[status]
+      \end{lstlisting}
 
 
    \section{Training}
    \subsection{Learning Curve}
-   Figure \ref{fig:5a} shows
+   Figure \ref{fig:5a} shows a learning curve, showing the average returns of the 1000 previous episodes. Note
+   that the policy is modified throughout these episodes. The policy has one hidden layer with 64 hidden neurons
+   (this is the default value that will be experimented with in the next subsection), a RELU activation, as well
+   as a softmax layer on the output (to convert the output to a probability distribution). A gamma of $0.99$ was used
+   to discount the rewards. Using a gamma of $1$ lowered the average returns and win rate by over 10\% (plots showing
+   these results can be found in the \texttt{resources} folder).
       \begin{figure}[h] \centering
-          \includegraphics[width=4in]{resources/part5a}
-          \caption{Learning curve. }
+          \includegraphics[width=4in]{resources/part5a_scaled}
+          \caption{ Learning curve showing the average return as a function of the number of episodes
+                  that have been played. Only points in the interval $[0,1]$ are shown (this gave the best scale),
+                  though there are points with lower average returns (a plot with all points is saved
+                  as \texttt{part5a\_allPoints} in the \texttt{resources} folder). }
           \label{fig:5a}
        \end{figure}
 
    \subsection{Hidden Units}
+   The value of 64 hidden neurons gave excellent results as shown in figure \ref{fig:5a}, but changes to this value
+   were explored to show how results changed as this number was varied.
+      \begin{table}[h]
+         \centering
+         \renewcommand{\arraystretch}{1.5}
+
+         \begin{tabular}{ p{7em}|l|l|l }
+            \hline
+            number of hidden units     &     win rate \% & avg returns & invalid moves \%   \\
+            \hline \hline
+            2     &  61.3   & -1.4   &  33    \\
+            9     &  91.4   & 0.88   &  0.5   \\
+            27    &  93.6   & 0.94   &  0.1   \\
+            64    &  93.9   & 0.94   &  0     \\
+            100   &  93.9   & 0.94   &  0     \\
+            \hline
+         \end{tabular}
+
+         \caption{ Win rate after 50000 episodes varying with the number of hidden units in the policy. The win rate
+                  shown was found by playing the policy against a random opponent for 1000 games. }
+         \label{table:part5b}
+      \end{table}
+   Table \ref{table:part5b} shows several metrics for evaluation the policy after 50000 episodes. 2 hidden neurons
+   clearly do not have enough capacity to form a good policy, while 9 preforms pretty well (much higher than the
+   60\% baseline win rate for a random player with the first move), and 27 is already almost indistinguishable from 100.
 
    \subsection{Invalid Moves}
-   Figure \ref{fig:5c} shows
+   Figure \ref{fig:5c} shows the fraction of all moves played by the learned policy that were invalid. As above, each
+   point is the average over the previous 1000 episodes. Looking at the graph, invalid moves have pretty much
+   completely stopped before the 10000th episode (less than 1 \%), though there are still statistical fluctuations
+   to much higher rates of invalid moves.
       \begin{figure}[h] \centering
           \includegraphics[width=4in]{resources/part5c}
-          \caption{ Invalid moves. }
+          \caption{ Fraction of invalid moves varying with the number of episodes that have been played as
+                  part of training. }
           \label{fig:5c}
        \end{figure}
 
