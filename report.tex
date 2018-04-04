@@ -186,7 +186,7 @@
          \caption{ Original rewards (the \texttt{DONE} status was not give a reward). }
          \label{table:part4}
       \end{table}
-   The logic behind these rewards was to follow an intuitive feeling for how much the above results
+   The reasoning behind these rewards was to follow an intuitive feeling for how much the above results
    are actually desired. This is somewhat arbitrary, but does represent a reasonable starting point.
    Thus a valid move should get a small positive reward, while an invalid one should
    be heavily penalized. A win is highly rewarded, a tie gets some reward for preventing a loss, while a
@@ -195,8 +195,9 @@
 
    However, while debugging during training, the rewards were set to much simpler values, and - since
    after the issues were resolved the win rate was quite high - the changed rewards were kept. These rewards
-   were simply $+1$ for a win, and $-1$ for an invalid move.
-   A side-effect of this scheme is that the average return is equivalent to the win rate.
+   were simply $+1$ for a win, and $-1$ for an invalid move. The rest of the rewards were set to zero.
+   A side-effect of this scheme is that the average return is very similar to the win rate, once the policy
+   has learned to avoid invalid moves.
 
    The final \texttt{get\_reward()} function is shown in the following code block.
       \begin{lstlisting}[language=Python, label={reward}]
@@ -225,8 +226,8 @@
           \includegraphics[width=4in]{resources/part5a_scaled}
           \caption{ Learning curve showing the average return as a function of the number of episodes
                   that have been played. Only points in the interval $[0,1]$ are shown (this gave the best scale),
-                  though there are points with lower average returns (a plot with all points is saved
-                  as \texttt{part5a\_allPoints} in the \texttt{resources} folder). }
+                  though there are points with lower average returns as a result of invalid moves (a plot with all
+                  points is saved as \texttt{part5a\_allPoints} in the \texttt{resources} folder). }
           \label{fig:5a}
        \end{figure}
 
@@ -250,7 +251,9 @@
          \end{tabular}
 
          \caption{ Win rate after 50000 episodes varying with the number of hidden units in the policy. The win rate
-                  shown was found by playing the policy against a random opponent for 1000 games. }
+                  shown was found by playing the policy against a random opponent for 1000 games. Note that only
+                  one decimal place is shown - there were still a miniscule number of invalid moves even with a
+                  large number of neurons. }
          \label{table:part5b}
       \end{table}
    Table \ref{table:part5b} shows several metrics for evaluation the policy after 50000 episodes. 2 hidden neurons
@@ -260,8 +263,8 @@
    \subsection{Invalid Moves}
    Figure \ref{fig:5c} shows the fraction of all moves played by the learned policy that were invalid. As above, each
    point is the average over the previous 1000 episodes. Looking at the graph, invalid moves have pretty much
-   completely stopped before the 10000th episode (less than 1 \%), though there are still statistical fluctuations
-   to much higher rates of invalid moves.
+   completely stopped before the 10000th episode (less than 1 \% of moves played are invalid), though there are still
+   statistical fluctuations to much higher rates of invalid moves.
       \begin{figure}[h] \centering
           \includegraphics[width=4in]{resources/part5c}
           \caption{ Fraction of invalid moves varying with the number of episodes that have been played as
@@ -286,8 +289,8 @@
    advanced strategies than that (such as the double-trap). Sampling another 10 games (saved as \texttt{part5d\_more}
    in the \texttt{resources} folder) actually shows some bad strategy, such as not closing off an opportunity for
    $O$ to win; thus showing a weakness of the rewards that were used. Also noteworthy is that the policy seems to
-   have learned that the middle square is not a good move - in only 2/15 of the sampled games is that moved played; in
-   the rest, the policy wins along an edge.
+   have learned that the middle square is not a good move - in only 2/15 of the sampled games is that moved played at
+   andy point; in the rest, the policy wins along an edge.
 
    \section{Win Rate over Episodes}
    Figure \ref{fig:6} shows, using weights stored throughout training (every 1000 episodes), how the win, lose,
@@ -305,8 +308,28 @@
    least where one of the players is random while the other is highly trained; it's well known that for optimal play
    games always end in a tie).
 
+
    \section{First Moves}
+   Figure \ref{fig:7} shows the distribution of first moves of the policy at various points - before, near the beginning,
+   at the halfway point, and after training. The policy starts mostly evenly balanced, as is to be expected before
+   any training. Quite quickly, within 2000 episodes, the policy learns to prefer corners, while after 25000 episodes
+   (center image), the policy has learned to prefer the upper left corner, with
+   that probability overwhelming all of the others. Interestingly, by the end of training, the preferred corner
+   has switched to the bottom right. The policy has learned - correctly - that a corner is the optimal first move.
+      \begin{figure}[h] \centering
+          \includegraphics[width=6.5in]{resources/part7}
+          \caption{ The first move distribution before any training, after 2000 episodes, after 25000 episodes (halfway
+                  through training), and after 50000 episodes (the end of training). }
+          \label{fig:7}
+       \end{figure}
+
+
    \section{Limitations}
+   As mentioned above, one notable limitation (likely due to the chosen rewards) is that the policy occasionally allows
+   an opponent a free pass to a win, when such could have easily been avoided. Though tic tac toe is a fairly simple
+   game (at least for humans), the policy did not learn strategies such as the double trap. While the policy preformed
+   extremely well with very little tuning, it still does not play optimally - the optimal solution could even be
+   hard-coded for a game like tic tac toe.
 
 
 \end{document}

@@ -465,13 +465,18 @@ if __name__ == '__main__':
     e = Environment()
     dist_final = first_move_distr(policy, e).numpy() #distribution after training
     dist_start = first_move_distr(p, e).numpy() #random starting policy distribution
-    p_middle = Policy()
+    
+    p_middleA = Policy()
     e = Environment()
-    load_weights(p_middle, 2000)
-    dist_middle = first_move_distr(p_middle, e).numpy() #distribution after training through 2000 episodes
+    load_weights(p_middleA, 2000)
+    dist_middleA = first_move_distr(p_middleA, e).numpy() #distribution after training through 2000 episodes
+    p_middleB = Policy()
+    e = Environment()
+    load_weights(p_middleB, 25000)
+    dist_middleB = first_move_distr(p_middleB, e).numpy() #distribution after training through 25000 episodes
 
     #create plot showing first move distribution
-    ncols = 4
+    ncols = 5
     nrows = 2 #for some reason this needs to be 1 higher than what you actually want
     fig = plt.figure( figsize=(ncols,nrows) )
     axes = [ fig.add_subplot(nrows, ncols, r * ncols + c) for r in range(0, nrows) for c in range(1, ncols) ]
@@ -483,18 +488,20 @@ if __name__ == '__main__':
     plt.tight_layout(pad=0.1, w_pad=0.5, h_pad=0)
 
     dist_start = np.reshape(dist_start, (3,3) )
-    dist_middle = np.reshape(dist_middle, (3,3) )
+    dist_middleA = np.reshape(dist_middleA, (3,3) )
+    dist_middleB = np.reshape(dist_middleB, (3,3) )
     dist_final = np.reshape(dist_final, (3,3) )
     the_table = axes[0].table(cellText=dist_start,loc='center', cellLoc='center')
-    the_table = axes[1].table(cellText=dist_middle,loc='center', cellLoc='center')
-    the_table = axes[2].table(cellText=dist_final,loc='center', cellLoc='center')
+    the_table = axes[1].table(cellText=dist_middleA,loc='center', cellLoc='center')
+    the_table = axes[2].table(cellText=dist_middleB,loc='center', cellLoc='center')
+    the_table = axes[3].table(cellText=dist_final,loc='center', cellLoc='center')
     #plt.show()
-    plt.savefig('resources/part7', dpi=900)
+    plt.savefig('resources/part7', dpi=1500)
     plt.close()
     
     
     
-    ## MISC
+    ## MISC - not used from provided starter code
     '''
     import sys
     if len(sys.argv) == 1:
