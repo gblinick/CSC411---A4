@@ -283,6 +283,48 @@ def play_games(policy, env, num):
             return
     return results
 
+def display_games(policy, env, num, filename):
+    rand_seeding(0)  
+    player2 = env.play_against_random
+
+    ncols = 10
+    nrows = num+1
+    fig = plt.figure( figsize=(ncols,nrows) )
+    axes = [ fig.add_subplot(nrows, ncols, r * ncols + c) for r in range(0, nrows) for c in range(1, ncols) ]
+    for ax in axes:
+        ax.set_xticks([])
+        ax.set_yticks([])
+        ax.axis('off')
+    plt.subplots_adjust(left=0.05, bottom=0.05, right=0.95, top=0.95, wspace=0.1, hspace=0.2) 
+    plt.tight_layout(pad=0.1, w_pad=0.5, h_pad=0)
+
+    for i in range(num):
+        k=0
+        state = env.reset()
+        done = False
+        while not done:
+            action, logprob = select_action(policy, state)
+            state, status, done = player2(action)
+    
+            g = list(env.grid.copy())
+            for j in range( len(g) ):
+                if g[j] == 0:
+                    g[j] = ''
+                elif g[j] == 1:
+                    g[j] = 'X'
+                else:
+                    g[j] = 'O'
+            data = np.reshape(g, (3,3) )
+            #print(k)
+            #print(data)
+            the_table = axes[i*ncols+k-i].table(cellText=data,loc='center', cellLoc='center')
+            k+=1
+        k=0
+    #plt.show()
+    plt.savefig(filename)
+    plt.close()
+    return
+    
 
 
 
@@ -352,6 +394,21 @@ if __name__ == '__main__':
     plt.savefig('resources/'+filename)
     plt.close()
 
+    ## Part 5d
+    e = Environment()
+    filename = 'resources/part5d'
+    display_games(policy, e, 5, filename) #saved image will need to be cropped
+    
+    n = 100 #number of games to test on
+    res = play_games(policy, e, n)
+    a = [x for x in res if x == 1 ]
+    win_rate = len(a)/n 
+    b = [x for x in res if x == 2 ]
+    lose_rate = len(b)/n 
+    c = [x for x in res if x == 0 ]
+    tie_rate = len(c)/n 
+
+
     ## Part 5b - experimenting with number of hidden neurons
     neurons = [2, 9, 27, 100]
     win_rate = []
@@ -400,6 +457,8 @@ if __name__ == '__main__':
 
 
 
+    
+    
     ## MISC
     '''
     import sys
