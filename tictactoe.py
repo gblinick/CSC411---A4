@@ -489,7 +489,7 @@ if __name__ == '__main__':
     the_table = axes[1].table(cellText=dist_middle,loc='center', cellLoc='center')
     the_table = axes[2].table(cellText=dist_final,loc='center', cellLoc='center')
     #plt.show()
-    plt.savefig('resources/part7')
+    plt.savefig('resources/part7', dpi=900)
     plt.close()
     
     
