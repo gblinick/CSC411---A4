@@ -178,11 +178,12 @@ def finish_episode(saved_rewards, saved_logprobs, gamma=1.0):
 def get_reward(status):
     """Returns a numeric given an environment status."""
     return {
-            Environment.STATUS_VALID_MOVE  : 1, # TODO
-            Environment.STATUS_INVALID_MOVE: -10,
-            Environment.STATUS_WIN         : 15,
-            Environment.STATUS_TIE         : 3,
-            Environment.STATUS_LOSE        : -1
+            Environment.STATUS_VALID_MOVE  : 0, # TODO
+            Environment.STATUS_INVALID_MOVE: -1, 
+            Environment.STATUS_WIN         : 1, 
+            Environment.STATUS_TIE         : 0,
+            Environment.STATUS_LOSE        : 0
+            #1, -10, 15, 3, -1
     }[status]
 
 def train(policy, env, gamma=1.0, log_interval=1000):
@@ -214,10 +215,10 @@ def train(policy, env, gamma=1.0, log_interval=1000):
             saved_rewards.append(reward)
             if status == Environment.STATUS_INVALID_MOVE:
                 inv_moves += 1
-            if status == Environment.STATUS_WIN:
-                wins += 1
             moves += 1
-            games += 1
+        if status == Environment.STATUS_WIN:
+            wins += 1
+        games += 1
         
         R = compute_returns(saved_rewards)[0]
         running_reward += R
