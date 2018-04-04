@@ -288,7 +288,7 @@ def display_games(policy, env, num, filename):
     player2 = env.play_against_random
 
     ncols = 10
-    nrows = num+1
+    nrows = num+1 #for some reason this needs to be 1 higher than what you actually want
     fig = plt.figure( figsize=(ncols,nrows) )
     axes = [ fig.add_subplot(nrows, ncols, r * ncols + c) for r in range(0, nrows) for c in range(1, ncols) ]
     for ax in axes:
@@ -396,10 +396,12 @@ if __name__ == '__main__':
 
     ## Part 5d
     e = Environment()
-    filename = 'resources/part5d'
-    display_games(policy, e, 5, filename) #saved image will need to be cropped
+    filename = 'resources/part5d_more'
+    display_games(policy, e, 10, filename) #saved image will need to be cropped
     
+    rand_seeding(0) 
     n = 100 #number of games to test on
+    e = Environment()
     res = play_games(policy, e, n)
     a = [x for x in res if x == 1 ]
     win_rate = len(a)/n 
@@ -425,6 +427,7 @@ if __name__ == '__main__':
 
 
     ## Part 6
+    rand_seeding(0)
     episodes = [0] + episode
     w = [] 
     l = []
@@ -455,8 +458,40 @@ if __name__ == '__main__':
     #plt.show()
     plt.close()
 
+    
+    ## Part 7
+    rand_seeding(0)
+    p = Policy() #random starting policy
+    e = Environment()
+    dist_final = first_move_distr(policy, e).numpy() #distribution after training
+    dist_start = first_move_distr(p, e).numpy() #random starting policy distribution
+    p_middle = Policy()
+    e = Environment()
+    load_weights(p_middle, 2000)
+    dist_middle = first_move_distr(p_middle, e).numpy() #distribution after training through 2000 episodes
 
+    #create plot showing first move distribution
+    ncols = 4
+    nrows = 2 #for some reason this needs to be 1 higher than what you actually want
+    fig = plt.figure( figsize=(ncols,nrows) )
+    axes = [ fig.add_subplot(nrows, ncols, r * ncols + c) for r in range(0, nrows) for c in range(1, ncols) ]
+    for ax in axes:
+        ax.set_xticks([])
+        ax.set_yticks([])
+        ax.axis('off')
+    plt.subplots_adjust(left=0.05, bottom=0.05, right=0.95, top=0.95, wspace=0.1, hspace=0.2) 
+    plt.tight_layout(pad=0.1, w_pad=0.5, h_pad=0)
 
+    dist_start = np.reshape(dist_start, (3,3) )
+    dist_middle = np.reshape(dist_middle, (3,3) )
+    dist_final = np.reshape(dist_final, (3,3) )
+    the_table = axes[0].table(cellText=dist_start,loc='center', cellLoc='center')
+    the_table = axes[1].table(cellText=dist_middle,loc='center', cellLoc='center')
+    the_table = axes[2].table(cellText=dist_final,loc='center', cellLoc='center')
+    #plt.show()
+    plt.savefig('resources/part7')
+    plt.close()
+    
     
     
     ## MISC
